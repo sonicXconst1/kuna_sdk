@@ -18,3 +18,4 @@ serde = { version = "1.*", features=["derive"] }
 serde_json = { version = "1.*" }
 chrono = { version = "0.*" }
 sha2 = { version = "0.*" }
+agnostic = { git = "https://github.com/sonicxconst1/agnostic.git", branch = "master" }
