@@ -7,3 +7,14 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+log = { version = "*" }
+hmac = { version = "0.*" }
+hex = { version = "0.*" }
+hyper = { version = "0.*", features=["full"] }
+tokio = { version = "1.*" }
+url = { version = "2.*" }
+http = { version = "0.*" }
+serde = { version = "1.*", features=["derive"] }
+serde_json = { version = "1.*" }
+chrono = { version = "0.*" }
+sha2 = { version = "0.*" }
