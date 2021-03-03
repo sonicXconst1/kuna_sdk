@@ -9,8 +9,11 @@ pub fn sign_request(
     body_json: Option<&str>,
     auth: &crate::context::AuthContext
 ) -> http::request::Builder {
-    let timestamp = chrono::Utc::now().timestamp();
-    let message = format!("{}{}{}", url, timestamp, body_json.unwrap_or("{}"));
+    let timestamp = chrono::Utc::now().timestamp_millis();
+    log::info!("URL: {}", url.path());
+    let body = body_json.unwrap_or("{}");
+    log::info!("BODY: {}", body);
+    let message = format!("{}{}{}", url.path(), timestamp, body_json.unwrap_or("{}"));
     builder
         .header("kun-nonce", timestamp)
         .header("kun-apikey", &auth.public_key)
