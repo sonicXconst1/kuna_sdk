@@ -1,6 +1,13 @@
-pub fn default_request_builder() -> http::request::Builder {
+pub const VERSION: &'static str = "v3";
+pub const AUTH: &'static str = "auth";
+pub const REQUEST: &'static str = "r";
+pub const WALLETS: &'static str = "wallets";
+pub const BOOK: &'static str = "book";
+
+pub fn default_request_builder(url: &url::Url) -> http::request::Builder {
     http::Request::builder()
         .header("Accept", "application/json")
+        .uri(url.to_string())
 }
 
 pub fn sign_request(
