@@ -3,6 +3,22 @@ pub const AUTH: &'static str = "auth";
 pub const REQUEST: &'static str = "r";
 pub const WALLETS: &'static str = "wallets";
 pub const BOOK: &'static str = "book";
+pub const W: &'static str = "w";
+pub const ORDER: &'static str = "order";
+pub const SUBMIT: &'static str = "submit";
+pub const MARKETS: &'static str = "markets";
+
+#[derive(Clone, Copy, Debug)]
+pub enum Side {
+    Sell,
+    Buy,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum Target {
+    Market,
+    Limit,
+}
 
 pub fn default_request_builder(url: &url::Url) -> http::request::Builder {
     http::Request::builder()

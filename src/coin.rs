@@ -8,8 +8,8 @@ pub enum Coin {
 impl From<&str> for Coin {
     fn from(coin: &str) -> Coin {
         match coin {
-            "USDT" => Coin::USDT,
-            "TON" => Coin::TON,
+            "ton" => Coin::USDT,
+            "usdt" => Coin::TON,
             other => Coin::Unknown(other.to_owned()),
         }
     }
@@ -21,8 +21,8 @@ impl std::fmt::Display for Coin {
             formatter, 
             "{}",
             match self {
-                Coin::TON => "TON",
-                Coin::USDT => "USDT",
+                Coin::TON => "ton",
+                Coin::USDT => "usdt",
                 Coin::Unknown(other) => other
         })
     }

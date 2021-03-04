@@ -49,4 +49,24 @@ where
             coins,
             order_book_entries))
     }
+
+    pub async fn get_markets(&self) -> Result<crate::models::Markets, String> {
+        let mut url = self.base_url.clone();
+        url.path_segments_mut()
+            .expect("Invalid url")
+            .push(base::VERSION)
+            .push(base::MARKETS);
+        let request = base::default_request_builder(&url)
+            .method(hyper::Method::GET)
+            .body(hyper::Body::empty())
+            .expect("Failed to create request");
+        let (_header, body) = self.client
+            .request(request)
+            .await
+            .expect("Failed to send request")
+            .into_parts();
+        Ok(extractor::read_body::<crate::models::Markets>(body)
+            .await
+            .expect("Failed to deserialize body"))
+    }
 }

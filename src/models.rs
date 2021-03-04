@@ -87,3 +87,54 @@ impl From<OrderBookEntry> for OrderBookItem {
         }
     }
 }
+
+#[derive(serde::Serialize, Clone, Debug)]
+pub struct CreateOrder {
+    symbol: String,
+    amount: f64,
+    price: f64,
+    #[serde(rename = "type")]
+    order_type: String,
+}
+
+#[derive(serde::Deserialize, Clone, Debug)]
+pub struct CreateOrderResponse {
+    pub value: String,
+}
+
+impl CreateOrder {
+    pub fn new(
+        coins: crate::coin::Coins,
+        side: crate::base::Side,
+        target: crate::base::Target,
+        amount: f64,
+        price: f64
+    ) -> CreateOrder {
+        use crate::base::{Side, Target};
+        CreateOrder {
+            symbol: coins.to_string(),
+            price,
+            amount: match side {
+                Side::Buy => amount,
+                Side::Sell => -amount,
+            },
+            order_type: match target {
+                Target::Market => "market".to_owned(),
+                Target::Limit => "limit".to_owned(),
+            }
+        }
+    }
+}
+
+pub type Markets = Vec<Market>;
+
+#[derive(serde::Deserialize, Clone, Debug)]
+pub struct Market {
+    pub id: String,
+    pub base_unit: String,
+    pub quote_unit: String,
+    pub base_precision: i32,
+    pub quote_precision: i32,
+    pub display_precision: i32,
+    pub price_change: f64,
+}
