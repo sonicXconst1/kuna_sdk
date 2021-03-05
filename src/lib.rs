@@ -5,3 +5,4 @@ pub mod client;
 pub mod public;
 pub mod models;
 pub mod coin;
+pub mod order;

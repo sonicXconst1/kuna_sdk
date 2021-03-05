@@ -66,13 +66,13 @@ where
             .push(base::ORDER)
             .push(base::SUBMIT);
         let body = serde_json::to_string(&order).expect("Serialization error");
-        log::info!("Body: {:#?}", body);
         let request = base::sign_request(
             base::default_request_builder(&url),
             &url,
             Some(&body),
             &self.auth_context,
         )
+        .header("Content-Type", "application/json")
         .method(hyper::Method::POST)
         .body(hyper::Body::from(body))
         .expect("Failed to create request");
@@ -84,5 +84,43 @@ where
             .into_parts();
         let body_result = extractor::read_body::<crate::models::CreateOrderResponse>(body).await;
         Ok(format!("Header {:#?}\nBody: {:#?}", header, body_result))
+    }
+
+    pub async fn delete_order(
+        &self,
+        cancel_order: crate::models::CancelOrderRequest,
+    ) -> Result<crate::order::CanceledOrder, String> {
+        let mut url = self.auth_context.base_url.clone();
+        url.path_segments_mut()
+            .expect("Invalid url")
+            .push(base::VERSION)
+            .push(base::ORDER)
+            .push(base::CANCEL);
+        let body = serde_json::to_string(&cancel_order).expect("Serialization error");
+        log::info!("body: {}", body);
+        let request = base::sign_request(
+            base::default_request_builder(&url),
+            &url,
+            Some(&body),
+            &self.auth_context,
+        )
+        .method(hyper::Method::POST)
+        .body(hyper::Body::from(body))
+        .expect("Failed to create request");
+        log::info!("Request: {:#?}", request);
+        let (header, body) = self
+            .client
+            .request(request)
+            .await
+            .expect("Failed to send request")
+            .into_parts();
+        let body_result = extractor::read_body::<crate::models::CanceledOrderResponse>(body)
+            .await
+            .expect("Failed to read the body");
+        use std::convert::TryFrom;
+        match crate::order::CanceledOrder::try_from(body_result) {
+            Ok(cancel_order) => Ok(cancel_order),
+            Err(error) => Err(format!("Header: {:#?}\nError: {}", header, error)),
+        }
     }
 }

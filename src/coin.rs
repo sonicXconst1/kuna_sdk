@@ -52,3 +52,14 @@ impl std::fmt::Display for Coins {
         write!(formatter, "{}{}", self.base_coin(), self.quote_coin())
     }
 }
+
+impl std::convert::TryFrom<&str> for Coins {
+    type Error = &'static str;
+
+    fn try_from(symbol: &str) -> Result<Coins, Self::Error> {
+        match symbol {
+            "tonusdt" => Ok(Coins::TonUsdt),
+            _ => Err("Not supported symbol")
+        }
+    }
+}

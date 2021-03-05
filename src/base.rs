@@ -7,6 +7,7 @@ pub const W: &'static str = "w";
 pub const ORDER: &'static str = "order";
 pub const SUBMIT: &'static str = "submit";
 pub const MARKETS: &'static str = "markets";
+pub const CANCEL: &'static str = "cancel";
 
 #[derive(Clone, Copy, Debug)]
 pub enum Side {
@@ -14,10 +15,34 @@ pub enum Side {
     Buy,
 }
 
+impl std::convert::TryFrom<&str> for Side {
+    type Error = &'static str;
+
+    fn try_from(side: &str) -> Result<Side, Self::Error> {
+        match side {
+            "sell" => Ok(Side::Sell),
+            "buy" => Ok(Side::Buy),
+            _ => Err("Invalid side"),
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub enum Target {
     Market,
     Limit,
+}
+
+impl std::convert::TryFrom<&str> for Target {
+    type Error = &'static str;
+
+    fn try_from(target: &str) -> Result<Target, Self::Error> {
+        match target {
+            "market" => Ok(Target::Market),
+            "limit" => Ok(Target::Limit),
+            _ => Err("Invalid order type"),
+        }
+    }
 }
 
 pub fn default_request_builder(url: &url::Url) -> http::request::Builder {
@@ -38,6 +63,7 @@ pub fn sign_request(
     log::info!("BODY: {}", body);
     let message = format!("{}{}{}", url.path(), timestamp, body_json.unwrap_or("{}"));
     builder
+        .header("Content-Type", "application/json")
         .header("kun-nonce", timestamp)
         .header("kun-apikey", &auth.public_key)
         .header("kun-signature", auth.sign(&message))

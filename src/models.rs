@@ -138,3 +138,29 @@ pub struct Market {
     pub display_precision: i32,
     pub price_change: f64,
 }
+
+#[derive(serde::Serialize, Clone, Debug)]
+pub struct CancelOrderRequest {
+    pub order_id: i32
+}
+
+#[derive(serde::Deserialize, Clone, Debug)]
+pub struct CanceledOrderResponse {
+    pub id: i32,
+    pub side: String,
+    #[serde(rename = "type")]
+    pub order_type: String,
+    pub price: String,
+    pub avg_execution_price: String,
+    pub state: String,
+    pub symbol: String,
+    pub timestamp: i32,
+    pub original_amount: String,
+    pub remaining_amount: String,
+    pub executed_amount: String,
+    pub is_cancelled: Option<String>,
+    pub is_hidden: Option<String>,
+    pub is_live: Option<String>,
+    pub was_forced: Option<String>,
+    pub exchange: Option<String>,
+}
