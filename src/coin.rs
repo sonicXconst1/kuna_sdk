@@ -7,10 +7,10 @@ pub enum Coin {
 
 impl From<&str> for Coin {
     fn from(coin: &str) -> Coin {
-        match coin {
+        match coin.to_lowercase().as_ref() {
             "ton" => Coin::USDT,
             "usdt" => Coin::TON,
-            other => Coin::Unknown(other.to_owned()),
+            _ => Coin::Unknown(coin.to_owned()),
         }
     }
 }
