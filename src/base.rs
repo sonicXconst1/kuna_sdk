@@ -45,6 +45,15 @@ impl std::convert::TryFrom<&str> for Target {
     }
 }
 
+impl std::fmt::Display for Target {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Target::Limit => write!(f, "limit"),
+            Target::Market => write!(f, "market"),
+        }
+    }
+}
+
 pub fn default_request_builder(url: &url::Url) -> http::request::Builder {
     http::Request::builder()
         .header("Accept", "application/json")
