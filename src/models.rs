@@ -90,11 +90,11 @@ impl From<OrderBookEntry> for OrderBookItem {
 
 #[derive(serde::Serialize, Clone, Debug)]
 pub struct CreateOrder {
-    symbol: String,
-    amount: f64,
-    price: f64,
+    pub symbol: String,
+    pub amount: f64,
+    pub price: f64,
     #[serde(rename = "type")]
-    order_type: String,
+    pub order_type: String,
 }
 
 #[derive(serde::Deserialize, Clone, Debug)]
