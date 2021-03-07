@@ -58,10 +58,8 @@ pub fn sign_request(
     auth: &crate::context::AuthContext
 ) -> http::request::Builder {
     let timestamp = chrono::Utc::now().timestamp_millis();
-    log::info!("URL: {}", url.path());
     let body = body_json.unwrap_or("{}");
-    log::info!("BODY: {}", body);
-    let message = format!("{}{}{}", url.path(), timestamp, body_json.unwrap_or("{}"));
+    let message = format!("{}{}{}", url.path(), timestamp, body);
     builder
         .header("Content-Type", "application/json")
         .header("kun-nonce", timestamp)

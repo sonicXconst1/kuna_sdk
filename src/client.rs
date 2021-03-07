@@ -97,7 +97,6 @@ where
             .push(base::ORDER)
             .push(base::CANCEL);
         let body = serde_json::to_string(&cancel_order).expect("Serialization error");
-        log::info!("body: {}", body);
         let request = base::sign_request(
             base::default_request_builder(&url),
             &url,
@@ -107,7 +106,6 @@ where
         .method(hyper::Method::POST)
         .body(hyper::Body::from(body))
         .expect("Failed to create request");
-        log::info!("Request: {:#?}", request);
         let (header, body) = self
             .client
             .request(request)
