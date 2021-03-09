@@ -8,8 +8,8 @@ pub enum Coin {
 impl From<&str> for Coin {
     fn from(coin: &str) -> Coin {
         match coin.to_lowercase().as_ref() {
-            "ton" => Coin::USDT,
-            "usdt" => Coin::TON,
+            "ton" => Coin::TON,
+            "usdt" => Coin::USDT,
             _ => Coin::Unknown(coin.to_owned()),
         }
     }
