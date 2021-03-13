@@ -37,7 +37,7 @@ impl std::convert::TryFrom<&str> for Target {
     type Error = &'static str;
 
     fn try_from(target: &str) -> Result<Target, Self::Error> {
-        match target {
+        match target.to_lowercase().as_ref() {
             "market" => Ok(Target::Market),
             "limit" => Ok(Target::Limit),
             _ => Err("Invalid order type"),

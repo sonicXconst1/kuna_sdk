@@ -28,3 +28,8 @@ impl TryFrom<models::CanceledOrderResponse> for CanceledOrder {
         })
     }
 }
+
+#[derive(Clone, Debug)]
+pub enum OrderStatus {
+    Executed,
+}

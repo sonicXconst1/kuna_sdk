@@ -1,5 +1,6 @@
 use super::base;
 use super::extractor;
+use crate::models;
 
 pub struct KunaClient<TConnector> {
     client: std::sync::Arc<hyper::Client<TConnector>>,
@@ -56,7 +57,10 @@ where
         Ok(result)
     }
 
-    pub async fn create_order(&self, order: crate::models::CreateOrder) -> Result<String, String> {
+    pub async fn create_order(
+        &self,
+        order: crate::models::CreateOrder
+    ) -> Result<models::CreateOrderResponse, String> {
         let mut url = self.auth_context.base_url.clone();
         url.path_segments_mut()
             .expect("Invalid url")
@@ -76,14 +80,22 @@ where
         .method(hyper::Method::POST)
         .body(hyper::Body::from(body))
         .expect("Failed to create request");
-        let (header, body) = self
+        let (_header, body) = self
             .client
             .request(request)
             .await
             .expect("Failed to send request")
             .into_parts();
-        let body_result = extractor::read_body::<crate::models::CreateOrderResponse>(body).await;
-        Ok(format!("Header {:#?}\nBody: {:#?}", header, body_result))
+        let body = match extractor::read_body::<models::CreateOrderResponseRaw>(body)
+            .await {
+            Some(body) => body,
+            None => return Err("Failed to read body".to_owned()),
+        };
+        use std::convert::TryFrom;
+        match models::CreateOrderResponse::try_from(body) {
+            Ok(response) => Ok(response),
+            Err(error) => Err(format!("{:#?}", error)),
+        }
     }
 
     pub async fn delete_order(
