@@ -31,23 +31,26 @@ where
             .push(base::VERSION)
             .push(base::BOOK)
             .push(&coins_string);
-        let request = base::default_request_builder(&url)
+        let request = match base::default_request_builder(&url)
             .method(hyper::Method::GET)
-            .body(hyper::Body::empty())
-            .expect("Failed to create request");
-        let (_header, body) = self
+            .body(hyper::Body::empty()) {
+            Ok(request) => request,
+            Err(error) => return Err(format!("Failed to create request: {:#?}", error)),
+        };
+        let (_header, body) = match self
             .client
             .request(request)
-            .await
-            .expect("Failed to send request")
-            .into_parts();
+            .await {
+            Ok(response) => response.into_parts(),
+            Err(error) => return Err(format!("Failed to create response: {:#?}", error)),
+        };
         use crate::models::OrderBookEntries;
-        let order_book_entries = extractor::read_body::<OrderBookEntries>(body)
-            .await
-            .expect("Failed to read body");
-        Ok(crate::models::OrderBook::with(
-            coins,
-            order_book_entries))
+        let order_book_entries = match extractor::read_body::<OrderBookEntries>(body)
+            .await {
+            Some(order_book) => order_book,
+            None => return Err("Failed to read body: {:#?}".to_owned()),
+        };
+        Ok(crate::models::OrderBook::with(coins, order_book_entries))
     }
 
     pub async fn get_markets(&self) -> Result<crate::models::Markets, String> {
@@ -56,17 +59,21 @@ where
             .expect("Invalid url")
             .push(base::VERSION)
             .push(base::MARKETS);
-        let request = base::default_request_builder(&url)
+        let request = match base::default_request_builder(&url)
             .method(hyper::Method::GET)
-            .body(hyper::Body::empty())
-            .expect("Failed to create request");
-        let (_header, body) = self.client
+            .body(hyper::Body::empty()) {
+            Ok(request) => request,
+            Err(error) => return Err(format!("Failed to create request: {:#?}", error)),
+        };
+        let (_header, body) = match self.client
             .request(request)
-            .await
-            .expect("Failed to send request")
-            .into_parts();
-        Ok(extractor::read_body::<crate::models::Markets>(body)
-            .await
-            .expect("Failed to deserialize body"))
+            .await {
+            Ok(response) => response.into_parts(),
+            Err(error) => return Err(format!("Failed to create response: {:#?}", error)),
+        };
+        match extractor::read_body::<crate::models::Markets>(body).await {
+            Some(result) => Ok(result),
+            None => Err("Failed to deserailize the body".to_owned()),
+        }
     }
 }
