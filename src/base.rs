@@ -5,6 +5,7 @@ pub const WALLETS: &'static str = "wallets";
 pub const BOOK: &'static str = "book";
 pub const W: &'static str = "w";
 pub const ORDER: &'static str = "order";
+pub const ORDERS: &'static str = "orders";
 pub const SUBMIT: &'static str = "submit";
 pub const MARKETS: &'static str = "markets";
 pub const CANCEL: &'static str = "cancel";

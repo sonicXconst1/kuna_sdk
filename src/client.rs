@@ -1,5 +1,6 @@
-use super::base;
-use super::extractor;
+use crate::base;
+use crate::extractor;
+use crate::coin;
 use crate::models;
 
 pub struct KunaClient<TConnector> {
@@ -151,5 +152,55 @@ where
             Ok(cancel_order) => Ok(cancel_order),
             Err(error) => Err(format!("Header: {:#?}\nError: {}", header, error)),
         }
+    }
+    
+    pub async fn get_my_orders(
+        &self,
+        coins: coin::Coins,
+    ) -> Result<Vec<models::CreateOrderResponse>, String> {
+        let mut url = self.auth_context.base_url.clone();
+        url.path_segments_mut()
+            .expect("Invalid url")
+            .push(base::VERSION)
+            .push(base::AUTH)
+            .push(base::REQUEST)
+            .push(base::ORDERS)
+            .push(&coins.to_string());
+        let request = match base::sign_request(
+            base::default_request_builder(&url),
+            &url,
+            None,
+            &self.auth_context,
+        )
+        .method(hyper::Method::POST)
+        .header("Content-Type", "application/json")
+        .body(hyper::Body::from("{}"))
+        {
+            Ok(request) => request,
+            Err(error) => return Err(format!("Failed to create request: {:#?}", error)),
+        };
+        let (_header, body) = match self
+            .client
+            .request(request)
+            .await {
+            Ok(response) => response.into_parts(),
+            Err(error) => return Err(format!("Failed to create response: {:#?}", error)),
+        };
+        let orders = match extractor::read_body::<Vec<models::CreateOrderResponseRaw>>(body)
+            .await {
+            Some(currency) => currency,
+            None => return Err("Failed to read body: {:#?}".to_owned()),
+        };
+        use std::convert::TryFrom;
+        let result: Vec<_> = orders
+            .into_iter()
+            .filter_map(|order| {
+                match models::CreateOrderResponse::try_from(order) {
+                    Ok(order) => Some(order),
+                    Err(_) => None,
+                }
+            })
+            .collect();
+        Ok(result)
     }
 }
