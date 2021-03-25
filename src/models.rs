@@ -103,6 +103,7 @@ pub struct CreateOrderResponse {
     pub target: crate::base::Target,
     pub initial_amount: f64,
     pub executed_amount: f64,
+    pub price: f64,
 }
 
 fn json_to_id(value: Option<&serde_json::Value>) -> Result<i32, CreateOrderError> {
@@ -181,6 +182,7 @@ impl std::convert::TryFrom<CreateOrderResponseRaw> for CreateOrderResponse {
         };
         let initial_amount = json_to_amount(response.get(6))?;
         let executed_amount = json_to_amount(response.get(7))?;
+        let price = json_to_amount(response.get(16))?;
         Ok(CreateOrderResponse {
             id: json_to_id(response.get(0))?,
             coins: json_to_coins(response.get(3))?,
@@ -188,6 +190,7 @@ impl std::convert::TryFrom<CreateOrderResponseRaw> for CreateOrderResponse {
             target: json_to_target(response.get(8))?,
             initial_amount,
             executed_amount,
+            price,
         })
     }
 }
