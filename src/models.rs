@@ -103,7 +103,7 @@ pub struct CreateOrderResponse {
     pub target: crate::base::Target,
     pub initial_amount: f64,
     pub executed_amount: f64,
-    pub price: f64,
+    pub price: Option<f64>,
 }
 
 fn json_to_id(value: Option<&serde_json::Value>) -> Result<i32, CreateOrderError> {
@@ -120,7 +120,7 @@ fn json_to_id(value: Option<&serde_json::Value>) -> Result<i32, CreateOrderError
     }
 }
 
-fn json_to_amount(value: Option<&serde_json::Value>) -> Result<f64, CreateOrderError> {
+fn json_to_amount(value: Option<&serde_json::Value>) -> Result<Option<f64>, CreateOrderError> {
     use std::str::FromStr;
     let value = match value {
         Some(value) => value,
@@ -128,13 +128,14 @@ fn json_to_amount(value: Option<&serde_json::Value>) -> Result<f64, CreateOrderE
     };
     match value {
         serde_json::Value::String(as_string) => match f64::from_str(&as_string) {
-            Ok(amount) => Ok(amount),
+            Ok(amount) => Ok(Some(amount)),
             Err(error) => Err(CreateOrderError::InvalidAmount(error)),
         },
         serde_json::Value::Number(number) => match number.as_f64() {
-            Some(amount) => Ok(amount),
+            Some(amount) => Ok(Some(amount)),
             None => Err(CreateOrderError::InvalidJson(value.clone())),
         },
+        serde_json::Value::Null => Ok(None),
         any => Err(CreateOrderError::InvalidJson(any.clone())),
     }
 }
@@ -180,8 +181,10 @@ impl std::convert::TryFrom<CreateOrderResponseRaw> for CreateOrderResponse {
         if response.len() < 17 {
             return Err(CreateOrderError::InvalidResponseLength);
         };
-        let initial_amount = json_to_amount(response.get(6))?;
-        let executed_amount = json_to_amount(response.get(7))?;
+        let initial_amount = json_to_amount(response.get(6))?
+            .expect("Initial amount is null");
+        let executed_amount = json_to_amount(response.get(7))?
+            .expect("Initial amount is null");
         let price = json_to_amount(response.get(16))?;
         Ok(CreateOrderResponse {
             id: json_to_id(response.get(0))?,
