@@ -104,9 +104,12 @@ where
             None => return Err("Failed to read body".to_owned()),
         };
         use std::convert::TryFrom;
-        match models::CreateOrderResponse::try_from(body) {
+        match models::CreateOrderResponse::try_from(body.clone()) {
             Ok(response) => Ok(response),
-            Err(error) => Err(format!("{:#?}", error)),
+            Err(error) => {
+                log::error!("Invalid json: {:#?}", body);
+                Err(format!("Failed to convert body to value: {:#?}", error))
+            },
         }
     }
 
