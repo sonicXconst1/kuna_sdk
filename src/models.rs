@@ -109,14 +109,14 @@ pub struct CreateOrderResponse {
 fn json_to_id(value: Option<&serde_json::Value>) -> Result<i32, CreateOrderError> {
     let value = match value {
         Some(value) => value,
-        None => return Err(CreateOrderError::InvalidJson),
+        None => return Err(CreateOrderError::NoJson("id")),
     };
     match value {
         serde_json::Value::Number(number) => match number.as_i64() {
             Some(id) => Ok(id as i32),
-            None => Err(CreateOrderError::InvalidJson),
+            None => Err(CreateOrderError::InvalidJson(value.clone())),
         },
-        _ => Err(CreateOrderError::InvalidJson),
+        any => Err(CreateOrderError::InvalidJson(any.clone())),
     }
 }
 
@@ -124,7 +124,7 @@ fn json_to_amount(value: Option<&serde_json::Value>) -> Result<f64, CreateOrderE
     use std::str::FromStr;
     let value = match value {
         Some(value) => value,
-        None => return Err(CreateOrderError::InvalidJson),
+        None => return Err(CreateOrderError::NoJson("Amount")),
     };
     match value {
         serde_json::Value::String(as_string) => match f64::from_str(&as_string) {
@@ -133,9 +133,9 @@ fn json_to_amount(value: Option<&serde_json::Value>) -> Result<f64, CreateOrderE
         },
         serde_json::Value::Number(number) => match number.as_f64() {
             Some(amount) => Ok(amount),
-            None => Err(CreateOrderError::InvalidJson),
+            None => Err(CreateOrderError::InvalidJson(value.clone())),
         },
-        _ => Err(CreateOrderError::InvalidJson),
+        any => Err(CreateOrderError::InvalidJson(any.clone())),
     }
 }
 
@@ -145,14 +145,14 @@ fn json_to_coins(
     use std::convert::TryFrom;
     let value = match value {
         Some(value) => value,
-        None => return Err(CreateOrderError::InvalidJson),
+        None => return Err(CreateOrderError::NoJson("Coins")),
     };
     match value {
         serde_json::Value::String(string) => match Coins::try_from(string.as_ref()) {
             Ok(coins) => Ok(coins),
-            Err(_) => Err(CreateOrderError::InvalidJson),
+            Err(error) => Err(CreateOrderError::ErrorJson(error)),
         },
-        _ => Err(CreateOrderError::InvalidJson),
+        any => Err(CreateOrderError::InvalidJson(any.clone())),
     }
 }
 
@@ -162,14 +162,14 @@ fn json_to_target(
     use std::convert::TryFrom;
     let value = match value {
         Some(value) => value,
-        None => return Err(CreateOrderError::InvalidJson),
+        None => return Err(CreateOrderError::NoJson("Target")),
     };
     match value {
         serde_json::Value::String(string) => match Target::try_from(string.to_lowercase().as_ref()) {
             Ok(target) => Ok(target),
-            Err(_) => Err(CreateOrderError::InvalidJson),
+            Err(error) => Err(CreateOrderError::ErrorJson(error)),
         },
-        _ => Err(CreateOrderError::InvalidJson),
+        any => Err(CreateOrderError::InvalidJson(any.clone())),
     }
 }
 
@@ -178,7 +178,7 @@ impl std::convert::TryFrom<CreateOrderResponseRaw> for CreateOrderResponse {
 
     fn try_from(response: CreateOrderResponseRaw) -> Result<Self, Self::Error> {
         if response.len() < 17 {
-            return Err(CreateOrderError::InvalidJson);
+            return Err(CreateOrderError::InvalidResponseLength);
         };
         let initial_amount = json_to_amount(response.get(6))?;
         let executed_amount = json_to_amount(response.get(7))?;
@@ -200,7 +200,10 @@ pub enum CreateOrderError {
     InvalidCoins(&'static str),
     InvalidAmount(<f64 as std::str::FromStr>::Err),
     InvalidTarget(&'static str),
-    InvalidJson,
+    InvalidJson(serde_json::Value),
+    ErrorJson(&'static str),
+    NoJson(&'static str),
+    InvalidResponseLength,
 }
 
 impl CreateOrder {
