@@ -260,7 +260,7 @@ pub struct CanceledOrderResponse {
     pub avg_execution_price: String,
     pub state: String,
     pub symbol: String,
-    pub timestamp: i32,
+    pub timestamp: u64,
     pub original_amount: String,
     pub remaining_amount: String,
     pub executed_amount: String,
