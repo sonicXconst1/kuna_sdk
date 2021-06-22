@@ -194,6 +194,7 @@ where
             Some(currency) => currency,
             None => return Err("Failed to read body: {:#?}".to_owned()),
         };
+        log::debug!("My Orders: {:#?}", orders);
         use std::convert::TryFrom;
         let result: Vec<_> = orders
             .into_iter()
