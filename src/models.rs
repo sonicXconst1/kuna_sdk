@@ -181,9 +181,9 @@ impl std::convert::TryFrom<CreateOrderResponseRaw> for CreateOrderResponse {
         if response.len() < 17 {
             return Err(CreateOrderError::InvalidResponseLength);
         };
-        let initial_amount = json_to_amount(response.get(6))?
-            .expect("Initial amount is null");
-        let executed_amount = json_to_amount(response.get(7))?
+        let executed_amount = json_to_amount(response.get(6))?
+            .expect("Executed amount is null");
+        let initial_amount = json_to_amount(response.get(7))?
             .expect("Initial amount is null");
         let price = json_to_amount(response.get(16))?;
         Ok(CreateOrderResponse {
