@@ -160,7 +160,7 @@ where
     pub async fn get_my_orders(
         &self,
         coins: coin::Coins,
-    ) -> Result<Vec<models::CreateOrderResponse>, String> {
+    ) -> Result<Vec<models::MyOrderResponse>, String> {
         let mut url = self.auth_context.base_url.clone();
         url.path_segments_mut()
             .expect("Invalid url")
@@ -198,7 +198,7 @@ where
         let result: Vec<_> = orders
             .into_iter()
             .filter_map(|order| {
-                match models::CreateOrderResponse::try_from(order) {
+                match models::MyOrderResponse::try_from(order) {
                     Ok(order) => Some(order),
                     Err(_) => None,
                 }

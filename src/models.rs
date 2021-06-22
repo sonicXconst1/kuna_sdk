@@ -106,6 +106,17 @@ pub struct CreateOrderResponse {
     pub price: Option<f64>,
 }
 
+#[derive(Clone, Debug)]
+pub struct MyOrderResponse {
+    pub id: i32,
+    pub coins: crate::coin::Coins,
+    pub side: crate::base::Side,
+    pub target: crate::base::Target,
+    pub initial_amount: f64,
+    pub executed_amount: f64,
+    pub price: Option<f64>,
+}
+
 fn json_to_id(value: Option<&serde_json::Value>) -> Result<i32, CreateOrderError> {
     let value = match value {
         Some(value) => value,
@@ -181,12 +192,36 @@ impl std::convert::TryFrom<CreateOrderResponseRaw> for CreateOrderResponse {
         if response.len() < 17 {
             return Err(CreateOrderError::InvalidResponseLength);
         };
+        let executed_amount = json_to_amount(response.get(7))?
+            .expect("Executed amount is null");
+        let initial_amount = json_to_amount(response.get(6))?
+            .expect("Initial amount is null");
+        let price = json_to_amount(response.get(16))?;
+        Ok(CreateOrderResponse {
+            id: json_to_id(response.get(0))?,
+            coins: json_to_coins(response.get(3))?,
+            side: if initial_amount < 0.0 { Side::Sell } else { Side::Buy },
+            target: json_to_target(response.get(8))?,
+            initial_amount,
+            executed_amount,
+            price,
+        })
+    }
+}
+
+impl std::convert::TryFrom<CreateOrderResponseRaw> for MyOrderResponse {
+    type Error = CreateOrderError;
+
+    fn try_from(response: CreateOrderResponseRaw) -> Result<Self, Self::Error> {
+        if response.len() < 17 {
+            return Err(CreateOrderError::InvalidResponseLength);
+        };
         let executed_amount = json_to_amount(response.get(6))?
             .expect("Executed amount is null");
         let initial_amount = json_to_amount(response.get(7))?
             .expect("Initial amount is null");
         let price = json_to_amount(response.get(16))?;
-        Ok(CreateOrderResponse {
+        Ok(MyOrderResponse {
             id: json_to_id(response.get(0))?,
             coins: json_to_coins(response.get(3))?,
             side: if initial_amount < 0.0 { Side::Sell } else { Side::Buy },
